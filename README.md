@@ -1,1 +1,3 @@
 # bespoke-calendar
+
+cfg.locale
