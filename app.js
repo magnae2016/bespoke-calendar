@@ -1,5 +1,5 @@
 import calendar from "./src/index.js";
-calendar({
+const c = calendar({
     locale: [
         "2022,1,W53,W03,12/26/2021,1/22/2022",
         "2022,2,W04,W07,1/23/2022,2/19/2022",
@@ -15,3 +15,5 @@ calendar({
         "2022,12,W47,W51,11/20/2022,12/24/2022",
     ],
 });
+// 2022-1월-W53
+console.log(c.$calendar.get("2022")[1].get(53));

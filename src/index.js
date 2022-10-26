@@ -23,11 +23,34 @@ class Month {
 }
 
 class Week {
-    constructor() {}
+    constructor(weekNumber, weekStartDay) {
+        this.$weekNumber = weekNumber;
+        this.$weekStartDay = weekStartDay;
+        this.weekNumber = weekNumber;
+        this.daysOfWeek = [];
+        this.parse();
+        this.spreadDays();
+    }
 
-    // Generator 함수
-    static nextTick() {
-        yield;
+    parse() {
+        if ([52, 53].includes(this.weekNumber)) {
+            this.weekNumber = 0;
+        }
+    }
+
+    spreadDays() {
+        for (const add of Array.from(Array(C.DAYS).keys())) {
+            const adding = moment(this.$weekStartDay, "M/D/YYYY")
+                .add(add, "d")
+                .format("YYYYMMDD");
+            this.daysOfWeek.push(adding);
+        }
+    }
+
+    nextWeek() {
+        const lastDay = this.daysOfWeek.at(-1);
+        const nextWeekStartDay = moment(lastDay).add(1, "d");
+        return new Week(++this.weekNumber, nextWeekStartDay);
     }
 }
 
@@ -63,12 +86,13 @@ class Calendar {
                 this.$y.push(key);
                 this.$calendar.set(
                     key,
-                    new Array(C.MONTHS + 1).fill(new Map())
+                    new Array(C.MONTHS + 1).fill(null).map(function () {
+                        return new Map();
+                    })
                 );
             } else console.log(C.ERR_NOT_ENOUGH_DATA);
         }
 
-        console.log(this.$calendar);
         if (this.$y.length) this.init();
         else console.error(C.ERR_NOT_ENOUGH_DATA);
     }
@@ -79,18 +103,22 @@ class Calendar {
             // Add Year, Month, Week, Day
             const [$y, $M, $SW, $EW, $SD, $ED] = locale.split(",");
             console.log($y, $M, $SW, $EW, $SD, $ED);
-            // week 객체를 만들어서
-            // next를 호출하면 for문을 돌릴 수 있도록 처리가 필요함
-            const month = this.$calendar.get($y)[$M];
 
-            const days = [];
-            for (const add of Array.from(Array(C.DAYS).keys())) {
-                const adding = moment($SD, "M/D/YYYY").add(add, "d");
-                days.push(adding);
-            }
-            month.set($SW, days);
+            const month = this.$calendar.get($y)[$M];
+            let sw = Number($SW.substring(1));
+            const ew = Number($EW.substring(1));
+            let week = new Week(sw, $SD);
+            do {
+                //
+                const W = week.$weekNumber;
+                const D = week.daysOfWeek;
+                month.set(W, D);
+                //
+                week = week.nextWeek();
+                sw = week.$weekNumber;
+            } while (sw <= ew);
         }
-        console.log(this.$calendar);
+        // console.log(this.$calendar);
     }
 }
 
